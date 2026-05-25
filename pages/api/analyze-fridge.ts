@@ -96,7 +96,7 @@ export default async function handler(
         image: { content: base64Data },
         imageContext: { languageHints: ['ja', 'en'] },
       }),
-      visionClient.objectLocalization({
+      visionClient.objectLocalization!({
         image: { content: base64Data },
       }),
     ])
