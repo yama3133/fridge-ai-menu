@@ -51,7 +51,7 @@ function filterFoodIngredients(labels: string[]): string[] {
   const foodItems = lowerLabels.filter(label =>
     FOOD_KEYWORDS.some(keyword => label.includes(keyword.toLowerCase()))
   )
-  return [...new Set(foodItems)].slice(0, 15)
+  return Array.from(new Set(foodItems)).slice(0, 15)
 }
 
 function parseMenusFromResponse(text: string): MenuItem[] {
