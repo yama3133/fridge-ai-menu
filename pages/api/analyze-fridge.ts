@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
-import { initializeVisionClient } from '../../lib/gcp-auth'
 
 export const config = {
   api: {
@@ -18,11 +17,6 @@ type MenuItem = {
   difficulty: string
 }
 
-type ClaudeResponse = {
-  ingredients: string[]
-  menus: MenuItem[]
-}
-
 type AnalyzeResponse = {
   success: boolean
   ingredients?: string[]
@@ -30,16 +24,17 @@ type AnalyzeResponse = {
   error?: string
 }
 
-function parseClaudeResponse(text: string): ClaudeResponse {
+type ClaudeResult = {
+  ingredients: string[]
+  menus: MenuItem[]
+}
+
+function parseClaudeResponse(text: string): ClaudeResult {
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
-    }
-    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (codeBlockMatch) {
-      return JSON.parse(codeBlockMatch[1])
-    }
+    if (jsonMatch) return JSON.parse(jsonMatch[0])
+    const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (codeBlock) return JSON.parse(codeBlock[1])
   } catch {
     // fallthrough
   }
@@ -59,71 +54,41 @@ export default async function handler(
     return res.status(400).json({ success: false, error: 'imageBase64 is required' })
   }
 
-  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
+  // data URL からメディアタイプと純粋なbase64を分離
+  const match = imageBase64.match(/^data:(image\/\w+);base64,(.+)$/)
+  const mediaType = (match?.[1] ?? 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+  const base64Data = match?.[2] ?? imageBase64
 
   try {
-    // Step 1: Vision API でラベル・物体を全取得（フィルタなし）
-    const visionClient = initializeVisionClient()
-
-    const [labelResult, objectResult] = await Promise.all([
-      visionClient.labelDetection({
-        image: { content: base64Data },
-        imageContext: { languageHints: ['ja', 'en'] },
-      }),
-      visionClient.objectLocalization!({
-        image: { content: base64Data },
-      }),
-    ])
-
-    const labels = (labelResult[0].labelAnnotations ?? [])
-      .filter(l => (l.score ?? 0) > 0.5)
-      .map(l => l.description ?? '')
-
-    const objects = (objectResult[0].localizedObjectAnnotations ?? [])
-      .filter(o => (o.score ?? 0) > 0.4)
-      .map(o => o.name ?? '')
-
-    const allLabels = Array.from(new Set([...labels, ...objects])).slice(0, 40)
-
-    if (allLabels.length === 0) {
-      return res.status(200).json({ success: true, ingredients: [], menus: [] })
-    }
-
-    // Step 2: Claude に「食材特定＋献立提案」を一括依頼
     const bedrockClient = new BedrockRuntimeClient({
-      region: process.env.AWS_REGION ?? 'ap-northeast-1',
+      region: process.env.AWS_REGION ?? 'us-east-1',
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
       },
     })
 
-    const prompt = `あなたは料理の専門家です。
-冷蔵庫の写真をAIで解析した結果、以下のラベルが検出されました：
+    const prompt = `この冷蔵庫の写真を見てください。
 
-検出ラベル: ${allLabels.join('、')}
+【重要】写真に実際に写っているものだけを答えてください。見えないものは絶対に含めないでください。
 
-【タスク1】上記ラベルから冷蔵庫に入っている食材・食品を日本語で特定してください。
-- 生鮮食品、缶詰、冷凍食品、調味料、加工食品、飲み物など何でも含めてください
-- Vision AIの認識誤りを考慮し、冷蔵庫によくある食品として合理的に解釈してください
-- 最大15種類まで
-
-【タスク2】特定した食材を使って作れる献立を3つ提案してください。
-
-必ず以下のJSON形式のみで回答してください（他の文章は不要）：
+以下のJSON形式のみで回答してください（他の文章は不要）：
 
 {
-  "ingredients": ["食材1", "食材2", "食材3"],
+  "ingredients": ["実際に写真で確認できる食材・食品名（日本語）"],
   "menus": [
     {
       "name": "料理名",
-      "description": "料理の説明（50文字以内）",
-      "ingredients": ["使用食材1", "使用食材2"],
+      "description": "料理の説明（40文字以内）",
+      "ingredients": ["使用する食材"],
       "cookingTime": "調理時間（例：20分）",
       "difficulty": "難易度（簡単/普通/難しい）"
     }
   ]
-}`
+}
+
+ingredientsは写真で実際に確認できるものだけ（最大15種類）。
+menusは確認できた食材を使った献立を3つ提案してください。`
 
     const command = new InvokeModelCommand({
       modelId: 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
@@ -132,40 +97,37 @@ export default async function handler(
       body: JSON.stringify({
         anthropic_version: 'bedrock-2023-05-31',
         max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: mediaType,
+                  data: base64Data,
+                },
+              },
+              {
+                type: 'text',
+                text: prompt,
+              },
+            ],
+          },
+        ],
       }),
     })
 
-    const bedrockResponse = await bedrockClient.send(command)
-    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body))
-    const responseText = responseBody.content[0].text as string
-
-    const { ingredients, menus } = parseClaudeResponse(responseText)
+    const response = await bedrockClient.send(command)
+    const body = JSON.parse(new TextDecoder().decode(response.body))
+    const text = body.content[0].text as string
+    const { ingredients, menus } = parseClaudeResponse(text)
 
     return res.status(200).json({ success: true, ingredients, menus })
   } catch (err: unknown) {
     console.error('analyze-fridge error:', err)
     const message = err instanceof Error ? err.message : 'Unknown error'
-
-    if (message.includes('PERMISSION_DENIED') || message.includes('billing')) {
-      return res.status(500).json({
-        success: false,
-        error: `Google Cloud Vision エラー: 課金が有効になっていません。GCPコンソールで課金を有効にしてください。`,
-      })
-    }
-    if (message.includes('CREDENTIALS') || message.includes('Vision')) {
-      return res.status(500).json({
-        success: false,
-        error: `Google Cloud Vision エラー: ${message}`,
-      })
-    }
-    if (message.includes('AccessDenied') || message.includes('UnrecognizedClient')) {
-      return res.status(500).json({
-        success: false,
-        error: `AWS Bedrock エラー: ${message}`,
-      })
-    }
-
     return res.status(500).json({ success: false, error: message })
   }
 }
