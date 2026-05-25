@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "GOOGLE_APPLICATION_CREDENTIALS": "@google_application_credentials",
+    "GOOGLE_CLOUD_PROJECT": "@google_cloud_project",
+    "AWS_REGION": "@aws_region",
+    "AWS_ACCESS_KEY_ID": "@aws_access_key_id",
+    "AWS_SECRET_ACCESS_KEY": "@aws_secret_access_key"
+  },
+  "functions": {
+    "pages/api/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
