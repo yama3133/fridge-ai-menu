@@ -10,7 +10,7 @@
 
 - 冷蔵庫の写真をアップロード or カメラで撮影
 - Google Cloud Vision API（OCR）でラベルの文字を読み取り食材を特定
-- AWS Bedrock（Claude Sonnet 4.5）が食材に合わせた献立を提案
+- Amazon Bedrock（Claude Sonnet 4.5）が食材に合わせた献立を提案
 - スマホ・デスクトップ両対応（iOS SafariのDynamic Island対応済み）
 
 ## 技術スタック
@@ -19,7 +19,7 @@
 |---|---|
 | フロントエンド | Next.js 14 / TypeScript / CSS Modules |
 | OCR | Google Cloud Vision API (TEXT_DETECTION) |
-| AI献立提案 | AWS Bedrock — Claude Sonnet 4.5 |
+| AI献立提案 | Amazon Bedrock — Claude Sonnet 4.5 |
 | デプロイ | Vercel |
 
 ## ローカル開発
