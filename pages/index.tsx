@@ -8,6 +8,14 @@ type MenuItem = {
   ingredients: string[]
   cookingTime: string
   difficulty: string
+  nutrition?: {
+    calories: number
+    protein_g: number
+    fat_g: number
+    carbs_g: number
+    sodium_mg: number
+    fiber_g: number
+  }
 }
 
 export default function Home() {
@@ -18,6 +26,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [hasHealthGoal, setHasHealthGoal] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -34,6 +43,7 @@ export default function Home() {
     setIngredients([])
     setMenus([])
     setError(null)
+    setHasHealthGoal(false)
   }, [])
 
   const stopCamera = useCallback(() => {
@@ -65,6 +75,7 @@ export default function Home() {
 
       setIngredients(data.ingredients ?? [])
       setMenus(data.menus ?? [])
+      setHasHealthGoal(data.hasHealthGoal ?? false)
     } catch (err) {
       setError(err instanceof Error ? err.message : '予期しないエラーが発生しました')
     } finally {
@@ -270,6 +281,9 @@ export default function Home() {
               <h2 className={styles.sectionTitle} style={{ marginBottom: '12px' }}>
                 AI献立提案 {menus.length}品
               </h2>
+              {hasHealthGoal && (
+                <div className={styles.healthBadge}>🎯 あなたの健康目標を反映した提案</div>
+              )}
               <div className={styles.menuGrid}>
                 {menus.map((menu, idx) => (
                   <div key={idx} className={styles.menuCard}>
@@ -289,6 +303,16 @@ export default function Home() {
                         {menu.ingredients.map(ing => (
                           <span key={ing} className={styles.smallTag}>{ing}</span>
                         ))}
+                      </div>
+                    )}
+                    {menu.nutrition && (
+                      <div className={styles.nutrition}>
+                        <span className={styles.nutritionItem}>🔥 {menu.nutrition.calories}kcal</span>
+                        <span className={styles.nutritionItem}>🥩 P{menu.nutrition.protein_g}g</span>
+                        <span className={styles.nutritionItem}>🧈 F{menu.nutrition.fat_g}g</span>
+                        <span className={styles.nutritionItem}>🍚 C{menu.nutrition.carbs_g}g</span>
+                        <span className={styles.nutritionItem}>🧂 {menu.nutrition.sodium_mg}mg</span>
+                        <span className={styles.nutritionItem}>🌾 {menu.nutrition.fiber_g}g</span>
                       </div>
                     )}
                   </div>

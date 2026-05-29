@@ -206,10 +206,12 @@ CREATE INDEX idx_coach_advices_user ON coach_advices(user_id, created_at DESC);
 - [ ] NextAuth.js 導入（メール/OAuth）
 - [ ] 健康目標プロフィール入力画面 + `/api/profile`
 
-### M3: 献立提案の健康対応（コア改修）
-- [ ] `analyze-fridge.ts` のプロンプトに健康目標を注入
-- [ ] `MenuItem` に栄養情報を追加 + パース対応
-- [ ] フロントの献立カードに栄養表示を追加
+### M3: 献立提案の健康対応（コア改修）— ✅ 完了
+- [x] `analyze-fridge.ts` のプロンプトに健康目標を注入（セッション→health_profiles読込）
+- [x] `MenuItem` に栄養情報（カロリー/P/F/C/塩分/繊維）を追加 + パース対応
+- [x] フロントの献立カードに栄養表示 + 「🎯 健康目標を反映」バッジ
+- [x] Bedrockモデル/リージョンを us-east-1（`us.anthropic.claude-sonnet-4-5...`）に統一
+- [x] 実機確認: Googleログイン→目標保存→目標反映の栄養付き献立まで疎通OK
 
 ### M4: 記録 + ダッシュボード（コーチの土台）
 - [ ] 「食べた」記録機能 + `/api/meal-logs`
