@@ -443,6 +443,37 @@
   gap: 6px;
 }
 
+/* ========== Nutrition ========== */
+
+.healthBadge {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 50px;
+}
+
+.nutrition {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.nutritionItem {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 4px 9px;
+}
+
 /* ========== Footer ========== */
 
 .footer {
