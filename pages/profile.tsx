@@ -1,6 +1,7 @@
 import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useI18n, LangSelect } from '../lib/i18n'
 
 type ProfileForm = {
   age: string
@@ -24,13 +25,13 @@ const EMPTY_FORM: ProfileForm = {
   goal: '',
 }
 
-// API値(number|null) → フォーム文字列
 function toFormValue(v: unknown): string {
   return v === null || v === undefined ? '' : String(v)
 }
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
+  const { t } = useI18n()
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -53,8 +54,8 @@ export default function ProfilePage() {
           })
         }
       })
-      .catch(() => setMessage('プロフィールの読み込みに失敗しました'))
-  }, [status])
+      .catch(() => setMessage(t('profile.loadFailed')))
+  }, [status, t])
 
   const update = (key: keyof ProfileForm, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -69,24 +70,24 @@ export default function ProfilePage() {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error('save failed')
-      setMessage('保存しました')
+      setMessage(t('profile.saved'))
     } catch {
-      setMessage('保存に失敗しました')
+      setMessage(t('profile.saveFailed'))
     } finally {
       setSaving(false)
     }
   }
 
   if (status === 'loading') {
-    return <main style={wrap}>読み込み中...</main>
+    return <main style={wrap}>{t('common.loading')}</main>
   }
 
   if (status === 'unauthenticated') {
     return (
       <main style={wrap}>
-        <p>ログインが必要です。</p>
+        <p>{t('common.loginRequired')}</p>
         <button style={primaryBtn} onClick={() => signIn('google', { callbackUrl: '/profile' })}>
-          Googleでログイン
+          {t('common.loginWithGoogle')}
         </button>
       </main>
     )
@@ -95,68 +96,69 @@ export default function ProfilePage() {
   return (
     <main style={{ ...wrap, alignItems: 'stretch', maxWidth: 480, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>健康目標プロフィール</h1>
+        <h1 style={{ fontSize: 22, margin: 0 }}>{t('profile.title')}</h1>
         <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
-          <Link href="/">献立</Link>
-          <Link href="/dashboard">📊 記録</Link>
+          <Link href="/">{t('nav.menu')}</Link>
+          <Link href="/dashboard">{t('nav.record')}</Link>
           <button style={linkBtn} onClick={() => signOut({ callbackUrl: '/login' })}>
-            ログアウト
+            {t('common.logout')}
           </button>
+          <LangSelect />
         </nav>
       </div>
       <p style={{ color: '#666', margin: '4px 0 16px' }}>
-        {session?.user?.email} としてログイン中
+        {t('profile.loggedInAs', { email: session?.user?.email ?? '' })}
       </p>
 
-      <Field label="年齢">
+      <Field label={t('profile.age')}>
         <input style={input} type="number" value={form.age} onChange={(e) => update('age', e.target.value)} />
       </Field>
 
-      <Field label="性別">
+      <Field label={t('profile.sex')}>
         <select style={input} value={form.sex} onChange={(e) => update('sex', e.target.value)}>
-          <option value="">未選択</option>
-          <option value="male">男性</option>
-          <option value="female">女性</option>
-          <option value="other">その他</option>
+          <option value="">{t('opt.unset')}</option>
+          <option value="male">{t('opt.male')}</option>
+          <option value="female">{t('opt.female')}</option>
+          <option value="other">{t('opt.other')}</option>
         </select>
       </Field>
 
-      <Field label="活動量">
+      <Field label={t('profile.activity')}>
         <select style={input} value={form.activityLevel} onChange={(e) => update('activityLevel', e.target.value)}>
-          <option value="">未選択</option>
-          <option value="low">低い（座り仕事中心）</option>
-          <option value="moderate">普通</option>
-          <option value="high">高い（運動習慣あり）</option>
+          <option value="">{t('opt.unset')}</option>
+          <option value="low">{t('opt.actLow')}</option>
+          <option value="moderate">{t('opt.actMod')}</option>
+          <option value="high">{t('opt.actHigh')}</option>
         </select>
       </Field>
 
-      <Field label="目標カロリー（kcal/日）">
+      <Field label={t('profile.targetCalories')}>
         <input style={input} type="number" value={form.targetCalories} onChange={(e) => update('targetCalories', e.target.value)} />
       </Field>
 
-      <Field label="目標タンパク質（g/日）">
+      <Field label={t('profile.targetProtein')}>
         <input style={input} type="number" value={form.targetProteinG} onChange={(e) => update('targetProteinG', e.target.value)} />
       </Field>
 
-      <Field label="塩分上限（mg/日）">
+      <Field label={t('profile.targetSodium')}>
         <input style={input} type="number" value={form.targetSodiumMg} onChange={(e) => update('targetSodiumMg', e.target.value)} />
       </Field>
 
-      <Field label="食物繊維 目標（g/日）">
+      <Field label={t('profile.targetFiber')}>
         <input style={input} type="number" value={form.targetFiberG} onChange={(e) => update('targetFiberG', e.target.value)} />
       </Field>
 
-      <Field label="目標タイプ">
+      <Field label={t('profile.goal')}>
         <select style={input} value={form.goal} onChange={(e) => update('goal', e.target.value)}>
-          <option value="">未選択</option>
-          <option value="diet">ダイエット</option>
-          <option value="muscle">筋肉増量</option>
-          <option value="maintain">現状維持</option>
+          <option value="">{t('opt.unset')}</option>
+          <option value="diet">{t('opt.goalDiet')}</option>
+          <option value="muscle">{t('opt.goalMuscle')}</option>
+          <option value="maintain">{t('opt.goalMaintain')}</option>
         </select>
       </Field>
 
       <button style={{ ...primaryBtn, marginTop: 8 }} onClick={save} disabled={saving}>
-        {saving ? '保存中...' : '保存する'}
+        {saving ? t('common.saving') : t('common.save')}
       </button>
       {message && <p style={{ textAlign: 'center', color: '#1a73e8' }}>{message}</p>}
     </main>

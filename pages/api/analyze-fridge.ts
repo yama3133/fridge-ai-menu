@@ -49,6 +49,17 @@ type ClaudeResult = {
 // US(us-east-1) の Claude Sonnet 4.5 推論プロファイル
 const MODEL_ID = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'
 
+// 出力言語の指定（料理名・説明・食材名をこの言語で生成させる）
+const LANG_NAME: Record<string, string> = {
+  ja: '日本語 (Japanese)',
+  en: 'English',
+  zh: '简体中文 (Simplified Chinese)',
+  ko: '한국어 (Korean)',
+  fr: 'Français (French)',
+  es: 'Español (Spanish)',
+  pt: 'Português (Portuguese)',
+}
+
 const GOAL_LABEL: Record<string, string> = {
   diet: 'ダイエット（減量）',
   muscle: '筋肉増量',
@@ -108,10 +119,11 @@ export default async function handler(
     return res.status(405).json({ success: false, error: 'Method not allowed' })
   }
 
-  const { imageBase64 } = req.body as { imageBase64: string }
+  const { imageBase64, lang } = req.body as { imageBase64: string; lang?: string }
   if (!imageBase64) {
     return res.status(400).json({ success: false, error: 'imageBase64 is required' })
   }
+  const langName = LANG_NAME[lang ?? 'ja'] ?? LANG_NAME.ja
 
   const match = imageBase64.match(/^data:(image\/\w+);base64,(.+)$/)
   const mediaType = (match?.[1] ?? 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
@@ -167,11 +179,12 @@ ${healthSection}
 4. 見た目の形状・色だけで食品を判断しない（丸い容器→アイスなど禁止）
 5. 各献立には1人前あたりの栄養価の概算（カロリー・タンパク質・脂質・炭水化物・塩分・食物繊維）を必ず付けてください
 6. 健康目標がある場合は、それに沿う献立を優先してください
+7. 出力する料理名・説明・食材名・調理時間・難易度は必ず ${langName} で記述してください（栄養の数値は除く）
 
-以下のJSON形式のみで回答してください：
+以下のJSON形式のみで回答してください（キー名は英語のまま、値は ${langName} で）：
 
 {
-  "ingredients": ["特定できた食材・食品名（日本語）"],
+  "ingredients": ["特定できた食材・食品名（${langName}）"],
   "menus": [
     {
       "name": "料理名",

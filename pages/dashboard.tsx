@@ -11,6 +11,7 @@ import {
   ReferenceLine,
   CartesianGrid,
 } from 'recharts'
+import { useI18n, LangSelect } from '../lib/i18n'
 
 type MealLog = {
   id: string
@@ -41,6 +42,7 @@ const dateKey = (d: Date) =>
 
 export default function DashboardPage() {
   const { status } = useSession()
+  const { t } = useI18n()
   const [logs, setLogs] = useState<MealLog[]>([])
   const [profile, setProfile] = useState<Profile>(null)
   const [loaded, setLoaded] = useState(false)
@@ -60,20 +62,19 @@ export default function DashboardPage() {
   }, [status])
 
   if (status === 'loading') {
-    return <main style={wrap}>読み込み中...</main>
+    return <main style={wrap}>{t('common.loading')}</main>
   }
   if (status === 'unauthenticated') {
     return (
       <main style={wrap}>
-        <p>ログインが必要です。</p>
+        <p>{t('common.loginRequired')}</p>
         <button style={primaryBtn} onClick={() => signIn('google', { callbackUrl: '/dashboard' })}>
-          Googleでログイン
+          {t('common.loginWithGoogle')}
         </button>
       </main>
     )
   }
 
-  // 直近7日の枠を用意
   const today = new Date()
   const todayK = dateKey(today)
   const days: { key: string; label: string }[] = []
@@ -100,43 +101,43 @@ export default function DashboardPage() {
 
   const chartData = days.map((d) => ({
     name: d.label,
-    カロリー: Math.round(sumByDate[d.key].kcal),
-    タンパク質: Math.round(sumByDate[d.key].p),
+    kcal: Math.round(sumByDate[d.key].kcal),
   }))
 
-  const t = sumByDate[todayK] ?? { kcal: 0, p: 0, f: 0, c: 0, sodium: 0, fiber: 0 }
+  const tot = sumByDate[todayK] ?? { kcal: 0, p: 0, f: 0, c: 0, sodium: 0, fiber: 0 }
   const todayCount = logs.filter((l) => l.eatenAt === todayK).length
 
   return (
     <main style={{ ...wrap, alignItems: 'stretch', maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <h1 style={{ fontSize: 22, margin: 0 }}>📊 栄養ダッシュボード</h1>
-        <nav style={{ display: 'flex', gap: 14, fontSize: 14 }}>
-          <Link href="/">献立</Link>
-          <Link href="/profile">目標</Link>
+        <h1 style={{ fontSize: 22, margin: 0 }}>{t('dash.title')}</h1>
+        <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
+          <Link href="/">{t('nav.menu')}</Link>
+          <Link href="/profile">{t('nav.goal')}</Link>
+          <LangSelect />
         </nav>
       </div>
 
       {!profile && (
         <p style={{ color: '#b45309', background: '#fffbeb', padding: 12, borderRadius: 8 }}>
-          健康目標が未設定です。<Link href="/profile">プロフィール</Link>で目標を設定すると進捗が表示されます。
+          {t('dash.noProfile')}
         </p>
       )}
 
       {/* 今日のサマリー */}
       <section style={card}>
-        <h2 style={h2}>今日の摂取（{todayCount}品 記録）</h2>
-        <ProgressRow label="カロリー" value={t.kcal} target={profile?.targetCalories ?? null} unit="kcal" overIsBad />
-        <ProgressRow label="タンパク質" value={t.p} target={profile?.targetProteinG ?? null} unit="g" />
-        <ProgressRow label="塩分" value={t.sodium} target={profile?.targetSodiumMg ?? null} unit="mg" overIsBad />
-        <ProgressRow label="食物繊維" value={t.fiber} target={profile?.targetFiberG ?? null} unit="g" />
+        <h2 style={h2}>{t('dash.todayIntake', { count: todayCount })}</h2>
+        <ProgressRow label={t('dash.calories')} value={tot.kcal} target={profile?.targetCalories ?? null} unit="kcal" overIsBad />
+        <ProgressRow label={t('dash.protein')} value={tot.p} target={profile?.targetProteinG ?? null} unit="g" />
+        <ProgressRow label={t('dash.sodium')} value={tot.sodium} target={profile?.targetSodiumMg ?? null} unit="mg" overIsBad />
+        <ProgressRow label={t('dash.fiber')} value={tot.fiber} target={profile?.targetFiberG ?? null} unit="g" />
       </section>
 
       {/* 週次グラフ */}
       <section style={card}>
-        <h2 style={h2}>過去7日の推移</h2>
+        <h2 style={h2}>{t('dash.weekTrend')}</h2>
         {loaded && logs.length === 0 ? (
-          <p style={{ color: '#888' }}>まだ記録がありません。献立ページで「食べた」を押すと記録されます。</p>
+          <p style={{ color: '#888' }}>{t('dash.noRecords')}</p>
         ) : (
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -150,10 +151,10 @@ export default function DashboardPage() {
                     y={profile.targetCalories}
                     stroke="#ef4444"
                     strokeDasharray="4 4"
-                    label={{ value: '目標kcal', fontSize: 11, fill: '#ef4444', position: 'insideTopRight' }}
+                    label={{ value: t('dash.targetKcal'), fontSize: 11, fill: '#ef4444', position: 'insideTopRight' }}
                   />
                 )}
-                <Bar dataKey="カロリー" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="kcal" name="kcal" fill="#16a34a" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -176,6 +177,7 @@ function ProgressRow({
   unit: string
   overIsBad?: boolean
 }) {
+  const { t } = useI18n()
   const v = Math.round(value)
   const pct = target && target > 0 ? Math.min((v / target) * 100, 100) : 0
   const over = target != null && v > target
@@ -192,11 +194,11 @@ function ProgressRow({
             <span style={{ marginLeft: 8, color: over ? (overIsBad ? '#ef4444' : '#16a34a') : '#888' }}>
               {overIsBad
                 ? over
-                  ? `超過 +${v - target}`
-                  : `あと${target - v}`
+                  ? t('dash.over', { n: v - target })
+                  : t('dash.remaining', { n: target - v })
                 : over
-                  ? '達成 ✓'
-                  : `あと${target - v}`}
+                  ? t('dash.achieved')
+                  : t('dash.remaining', { n: target - v })}
             </span>
           )}
         </span>
