@@ -1,4 +1,5 @@
 import { useSession, signIn, signOut } from 'next-auth/react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 type ProfileForm = {
@@ -95,9 +96,13 @@ export default function ProfilePage() {
     <main style={{ ...wrap, alignItems: 'stretch', maxWidth: 480, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ fontSize: 22, margin: 0 }}>健康目標プロフィール</h1>
-        <button style={linkBtn} onClick={() => signOut({ callbackUrl: '/login' })}>
-          ログアウト
-        </button>
+        <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
+          <Link href="/">献立</Link>
+          <Link href="/dashboard">📊 記録</Link>
+          <button style={linkBtn} onClick={() => signOut({ callbackUrl: '/login' })}>
+            ログアウト
+          </button>
+        </nav>
       </div>
       <p style={{ color: '#666', margin: '4px 0 16px' }}>
         {session?.user?.email} としてログイン中

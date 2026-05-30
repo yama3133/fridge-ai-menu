@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Head from 'next/head'
+import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import styles from '../styles/home.module.css'
 
 type MenuItem = {
@@ -27,6 +29,9 @@ export default function Home() {
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [hasHealthGoal, setHasHealthGoal] = useState(false)
+  const [loggedIdx, setLoggedIdx] = useState<Set<number>>(new Set())
+  const [loggingIdx, setLoggingIdx] = useState<number | null>(null)
+  const { status } = useSession()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -44,7 +49,34 @@ export default function Home() {
     setMenus([])
     setError(null)
     setHasHealthGoal(false)
+    setLoggedIdx(new Set())
   }, [])
+
+  const handleLogMeal = useCallback(async (menu: MenuItem, idx: number) => {
+    if (status !== 'authenticated') {
+      window.location.href = '/login'
+      return
+    }
+    setLoggingIdx(idx)
+    try {
+      const res = await fetch('/api/meal-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          menuName: menu.name,
+          description: menu.description,
+          ingredients: menu.ingredients,
+          nutrition: menu.nutrition,
+        }),
+      })
+      if (!res.ok) throw new Error('failed')
+      setLoggedIdx(prev => new Set(prev).add(idx))
+    } catch {
+      alert('記録に失敗しました')
+    } finally {
+      setLoggingIdx(null)
+    }
+  }, [status])
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -157,6 +189,16 @@ export default function Home() {
               <h1 className={styles.title}>🧊 冷蔵庫AI献立</h1>
               <p className={styles.subtitle}>写真を撮るだけで献立を自動提案</p>
             </div>
+            <nav style={{ marginLeft: 'auto', display: 'flex', gap: 16, alignItems: 'center' }}>
+              {status === 'authenticated' ? (
+                <>
+                  <Link href="/profile" style={{ color: '#fff', fontSize: 14 }}>目標</Link>
+                  <Link href="/dashboard" style={{ color: '#fff', fontSize: 14 }}>📊 記録</Link>
+                </>
+              ) : (
+                <Link href="/login" style={{ color: '#fff', fontSize: 14 }}>ログイン</Link>
+              )}
+            </nav>
           </div>
         </header>
 
@@ -315,6 +357,17 @@ export default function Home() {
                         <span className={styles.nutritionItem}>🌾 {menu.nutrition.fiber_g}g</span>
                       </div>
                     )}
+                    <button
+                      className={loggedIdx.has(idx) ? styles.logButtonDone : styles.logButton}
+                      onClick={() => handleLogMeal(menu, idx)}
+                      disabled={loggingIdx === idx || loggedIdx.has(idx)}
+                    >
+                      {loggedIdx.has(idx)
+                        ? '✓ 記録済み'
+                        : loggingIdx === idx
+                          ? '記録中...'
+                          : '＋ 食べた'}
+                    </button>
                   </div>
                 ))}
               </div>
