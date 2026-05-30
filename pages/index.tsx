@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import Head from 'next/head'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useI18n, LangSelect } from '../lib/i18n'
 import styles from '../styles/home.module.css'
 
 type MenuItem = {
@@ -32,6 +33,7 @@ export default function Home() {
   const [loggedIdx, setLoggedIdx] = useState<Set<number>>(new Set())
   const [loggingIdx, setLoggingIdx] = useState<number | null>(null)
   const { status } = useSession()
+  const { t, lang } = useI18n()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -96,24 +98,24 @@ export default function Home() {
       const response = await fetch('/api/analyze-fridge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64 }),
+        body: JSON.stringify({ imageBase64, lang }),
       })
 
       const data = await response.json()
 
       if (!data.success) {
-        throw new Error(data.error ?? '解析に失敗しました')
+        throw new Error(data.error ?? t('home.analyzeFailed'))
       }
 
       setIngredients(data.ingredients ?? [])
       setMenus(data.menus ?? [])
       setHasHealthGoal(data.hasHealthGoal ?? false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '予期しないエラーが発生しました')
+      setError(err instanceof Error ? err.message : t('home.unexpectedError'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [lang, t])
 
   const handleFileSelect = useCallback((file: File) => {
     stopCamera()
@@ -151,7 +153,7 @@ export default function Home() {
         }
       }, 50)
     } catch {
-      setError('カメラへのアクセスに失敗しました。ブラウザの設定を確認してください。')
+      setError(t('home.cameraError'))
     }
   }, [isMobile, reset])
 
@@ -173,7 +175,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>冷蔵庫AI献立</title>
+        <title>{t('home.title')}</title>
         <meta name="description" content="冷蔵庫の写真から食材を認識してAIが献立を提案します" />
         {/* viewport-fit=cover でノッチ・Dynamic Island対応 */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -186,18 +188,19 @@ export default function Home() {
         <header className={styles.header}>
           <div className={styles.headerContent}>
             <div>
-              <h1 className={styles.title}>🧊 冷蔵庫AI献立</h1>
-              <p className={styles.subtitle}>写真を撮るだけで献立を自動提案</p>
+              <h1 className={styles.title}>{t('home.title')}</h1>
+              <p className={styles.subtitle}>{t('home.subtitle')}</p>
             </div>
             <nav style={{ marginLeft: 'auto', display: 'flex', gap: 16, alignItems: 'center' }}>
               {status === 'authenticated' ? (
                 <>
-                  <Link href="/profile" style={{ color: '#fff', fontSize: 14 }}>目標</Link>
-                  <Link href="/dashboard" style={{ color: '#fff', fontSize: 14 }}>📊 記録</Link>
+                  <Link href="/profile" style={{ color: '#fff', fontSize: 14 }}>{t('nav.goal')}</Link>
+                  <Link href="/dashboard" style={{ color: '#fff', fontSize: 14 }}>{t('nav.record')}</Link>
                 </>
               ) : (
-                <Link href="/login" style={{ color: '#fff', fontSize: 14 }}>ログイン</Link>
+                <Link href="/login" style={{ color: '#fff', fontSize: 14 }}>{t('common.login')}</Link>
               )}
+              <LangSelect color="#fff" />
             </nav>
           </div>
         </header>
@@ -209,7 +212,7 @@ export default function Home() {
               <div className={styles.uploadArea}>
                 <div className={styles.uploadIcon}>📸</div>
                 <p className={styles.uploadText}>
-                  冷蔵庫の写真を選ぶか、カメラで撮影してください
+                  {t('home.uploadText')}
                 </p>
                 <div className={styles.uploadButtons}>
                   <button
@@ -217,14 +220,14 @@ export default function Home() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={loading}
                   >
-                    🖼️ 写真を選ぶ
+                    {t('home.choosePhoto')}
                   </button>
                   <button
                     className={styles.secondaryBtn}
                     onClick={startCamera}
                     disabled={loading}
                   >
-                    📷 カメラで撮影
+                    {t('home.takePhoto')}
                   </button>
                 </div>
 
@@ -263,10 +266,10 @@ export default function Home() {
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
                 <div className={styles.cameraActions}>
                   <button className={styles.captureBtn} onClick={capturePhoto}>
-                    📸 撮影する
+                    {t('home.capture')}
                   </button>
                   <button className={styles.resetBtn} onClick={stopCamera}>
-                    キャンセル
+                    {t('home.cancel')}
                   </button>
                 </div>
               </div>
@@ -287,7 +290,7 @@ export default function Home() {
                     if (fileInputRef.current) fileInputRef.current.value = ''
                     if (cameraInputRef.current) cameraInputRef.current.value = ''
                   }}>
-                    別の画像を選ぶ
+                    {t('home.chooseAnother')}
                   </button>
                 )}
               </div>
@@ -298,7 +301,7 @@ export default function Home() {
           {loading && (
             <div className={styles.loading}>
               <div className={styles.spinner} />
-              <p className={styles.loadingText}>AIが食材を認識して{'\n'}献立を考えています...</p>
+              <p className={styles.loadingText} style={{ whiteSpace: 'pre-line' }}>{t('home.analyzing')}</p>
             </div>
           )}
 
@@ -308,7 +311,7 @@ export default function Home() {
           {/* 検出食材 */}
           {ingredients.length > 0 && (
             <section className={styles.ingredientsSection}>
-              <h2 className={styles.sectionTitle}>検出された食材 {ingredients.length}種類</h2>
+              <h2 className={styles.sectionTitle}>{t('home.detected', { count: ingredients.length })}</h2>
               <div className={styles.ingredientsList}>
                 {ingredients.map(ing => (
                   <span key={ing} className={styles.ingredientTag}>{ing}</span>
@@ -321,10 +324,10 @@ export default function Home() {
           {menus.length > 0 && (
             <section className={styles.menusSection}>
               <h2 className={styles.sectionTitle} style={{ marginBottom: '12px' }}>
-                AI献立提案 {menus.length}品
+                {t('home.menuTitle', { count: menus.length })}
               </h2>
               {hasHealthGoal && (
-                <div className={styles.healthBadge}>🎯 あなたの健康目標を反映した提案</div>
+                <div className={styles.healthBadge}>{t('home.healthBadge')}</div>
               )}
               <div className={styles.menuGrid}>
                 {menus.map((menu, idx) => (
@@ -363,10 +366,10 @@ export default function Home() {
                       disabled={loggingIdx === idx || loggedIdx.has(idx)}
                     >
                       {loggedIdx.has(idx)
-                        ? '✓ 記録済み'
+                        ? t('home.eaten')
                         : loggingIdx === idx
-                          ? '記録中...'
-                          : '＋ 食べた'}
+                          ? t('home.logging')
+                          : t('home.eat')}
                     </button>
                   </div>
                 ))}
@@ -376,13 +379,13 @@ export default function Home() {
 
           {!loading && selectedImage && ingredients.length === 0 && menus.length === 0 && !error && (
             <div className={styles.error}>
-              食材が検出されませんでした。冷蔵庫の中身が写った写真を使ってください。
+              {t('home.noIngredients')}
             </div>
           )}
         </main>
 
         <footer className={styles.footer}>
-          Powered by Google Cloud Vision + AWS Bedrock (Claude Sonnet 4.5)
+          {t('home.footer')}
         </footer>
       </div>
     </>

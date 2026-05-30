@@ -1,9 +1,11 @@
 import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { useI18n, LangSelect } from '../lib/i18n'
 
 export default function LoginPage() {
   const { status } = useSession()
+  const { t } = useI18n()
   const router = useRouter()
 
   // ログイン済みならプロフィールへ
@@ -16,6 +18,7 @@ export default function LoginPage() {
   return (
     <main
       style={{
+        position: 'relative',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -26,10 +29,11 @@ export default function LoginPage() {
         textAlign: 'center',
       }}
     >
-      <h1 style={{ fontSize: 24, margin: 0 }}>冷蔵庫AI 健康管理</h1>
-      <p style={{ color: '#666', maxWidth: 360, lineHeight: 1.7 }}>
-        冷蔵庫の写真から、あなたの健康目標に合わせた献立を提案し、栄養を記録・管理します。
-      </p>
+      <div style={{ position: 'absolute', top: 16, right: 16 }}>
+        <LangSelect />
+      </div>
+      <h1 style={{ fontSize: 24, margin: 0 }}>{t('login.appName')}</h1>
+      <p style={{ color: '#666', maxWidth: 360, lineHeight: 1.7 }}>{t('login.desc')}</p>
       <button
         onClick={() => signIn('google', { callbackUrl: '/profile' })}
         style={{
@@ -43,7 +47,7 @@ export default function LoginPage() {
           cursor: 'pointer',
         }}
       >
-        Googleでログイン
+        {t('common.loginWithGoogle')}
       </button>
     </main>
   )
