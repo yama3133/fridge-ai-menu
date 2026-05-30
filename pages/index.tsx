@@ -196,6 +196,7 @@ export default function Home() {
                 <>
                   <Link href="/profile" style={{ color: '#fff', fontSize: 14 }}>{t('nav.goal')}</Link>
                   <Link href="/dashboard" style={{ color: '#fff', fontSize: 14 }}>{t('nav.record')}</Link>
+                  <Link href="/coach" style={{ color: '#fff', fontSize: 14 }}>{t('nav.coach')}</Link>
                 </>
               ) : (
                 <Link href="/login" style={{ color: '#fff', fontSize: 14 }}>{t('common.login')}</Link>

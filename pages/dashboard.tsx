@@ -114,6 +114,7 @@ export default function DashboardPage() {
         <nav style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 14 }}>
           <Link href="/">{t('nav.menu')}</Link>
           <Link href="/profile">{t('nav.goal')}</Link>
+          <Link href="/coach">{t('nav.coach')}</Link>
           <LangSelect />
         </nav>
       </div>
