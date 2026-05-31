@@ -16,7 +16,9 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
     "@aws-sdk/client-bedrock-runtime": "^3.450.0",
+    "@aws-sdk/rds-signer": "^3.1057.0",
     "@google-cloud/vision": "^4.1.0",
+    "@vercel/functions": "^3.6.1",
     "drizzle-orm": "^0.45.2",
     "next": "^14.0.0",
     "next-auth": "^4.24.14",
