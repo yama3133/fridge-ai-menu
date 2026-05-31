@@ -45,6 +45,43 @@ export default function Home() {
     setIsMobile(navigator.maxTouchPoints > 0)
   }, [])
 
+  // 献立結果をsessionStorageから復元（記録/コーチ画面から戻っても消えないように）
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('fridgeResult')
+      if (saved) {
+        const d = JSON.parse(saved)
+        if (Array.isArray(d.menus) && d.menus.length > 0) {
+          setIngredients(d.ingredients ?? [])
+          setMenus(d.menus ?? [])
+          setHasHealthGoal(d.hasHealthGoal ?? false)
+          if (Array.isArray(d.loggedIdx)) setLoggedIdx(new Set<number>(d.loggedIdx))
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // 献立結果をsessionStorageに保存（画像は容量が大きいので除外）
+  useEffect(() => {
+    try {
+      if (menus.length > 0) {
+        sessionStorage.setItem(
+          'fridgeResult',
+          JSON.stringify({
+            ingredients,
+            menus,
+            hasHealthGoal,
+            loggedIdx: Array.from(loggedIdx),
+          })
+        )
+      }
+    } catch {
+      // ignore（容量オーバー等）
+    }
+  }, [ingredients, menus, hasHealthGoal, loggedIdx])
+
   const reset = useCallback(() => {
     setSelectedImage(null)
     setIngredients([])
@@ -52,6 +89,11 @@ export default function Home() {
     setError(null)
     setHasHealthGoal(false)
     setLoggedIdx(new Set())
+    try {
+      sessionStorage.removeItem('fridgeResult')
+    } catch {
+      // ignore
+    }
   }, [])
 
   const handleLogMeal = useCallback(async (menu: MenuItem, idx: number) => {
