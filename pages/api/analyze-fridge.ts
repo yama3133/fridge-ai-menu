@@ -27,7 +27,9 @@ type Nutrition = {
 type MenuItem = {
   name: string
   description: string
-  ingredients: string[]
+  ingredients: string[] // 使用する全食材（記録・後方互換用）
+  haveIngredients: string[] // 冷蔵庫にある食材
+  needIngredients: string[] // 買い足す必要がある食材
   cookingTime: string
   difficulty: string
   nutrition: Nutrition
@@ -179,7 +181,8 @@ ${healthSection}
 4. 見た目の形状・色だけで食品を判断しない（丸い容器→アイスなど禁止）
 5. 各献立には1人前あたりの栄養価の概算（カロリー・タンパク質・脂質・炭水化物・塩分・食物繊維）を必ず付けてください
 6. 健康目標がある場合は、それに沿う献立を優先してください
-7. 出力する料理名・説明・食材名・調理時間・難易度は必ず ${langName} で記述してください（栄養の数値は除く）
+7. 各献立の食材を「冷蔵庫にある食材(haveIngredients)」と「買い足す必要がある食材(needIngredients)」に分けてください。冷蔵庫の写真/OCRで確認できた食材は have、それ以外で料理に必要なものは need に入れます。ingredients には両方を合わせた全食材を入れてください
+8. 出力する料理名・説明・食材名・調理時間・難易度は必ず ${langName} で記述してください（栄養の数値は除く）
 
 以下のJSON形式のみで回答してください（キー名は英語のまま、値は ${langName} で）：
 
@@ -189,7 +192,9 @@ ${healthSection}
     {
       "name": "料理名",
       "description": "料理の説明（40文字以内）",
-      "ingredients": ["使用する食材"],
+      "ingredients": ["使用する全食材"],
+      "haveIngredients": ["冷蔵庫にある食材"],
+      "needIngredients": ["買い足す必要がある食材"],
       "cookingTime": "調理時間（例：20分）",
       "difficulty": "難易度（簡単/普通/難しい）",
       "nutrition": {

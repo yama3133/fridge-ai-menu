@@ -9,6 +9,8 @@ type MenuItem = {
   name: string
   description: string
   ingredients: string[]
+  haveIngredients?: string[]
+  needIngredients?: string[]
   cookingTime: string
   difficulty: string
   nutrition?: {
@@ -214,6 +216,11 @@ export default function Home() {
     analyzeImage(dataUrl)
   }, [analyzeImage, stopCamera])
 
+  // 全献立の「買い足す食材」を重複排除して集約
+  const shoppingList = Array.from(
+    new Set(menus.flatMap(m => m.needIngredients ?? []))
+  )
+
   return (
     <>
       <Head>
@@ -223,7 +230,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#16a34a" />
+        <meta name="theme-color" content="#2563eb" />
       </Head>
 
       <div className={styles.container}>
@@ -363,6 +370,20 @@ export default function Home() {
             </section>
           )}
 
+          {/* 買い物リスト（全献立の不足食材を集約） */}
+          {shoppingList.length > 0 && (
+            <section className={styles.shoppingSection}>
+              <h2 className={styles.sectionTitle} style={{ marginBottom: '12px' }}>
+                🛒 {t('home.shoppingList', { count: shoppingList.length })}
+              </h2>
+              <div className={styles.ingredientsList}>
+                {shoppingList.map(ing => (
+                  <span key={ing} className={styles.needTag}>{ing}</span>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* 献立提案 */}
           {menus.length > 0 && (
             <section className={styles.menusSection}>
@@ -386,12 +407,33 @@ export default function Home() {
                       <span className={styles.metaIcon}>⏱</span>
                       <span>{menu.cookingTime}</span>
                     </div>
-                    {menu.ingredients?.length > 0 && (
-                      <div className={styles.usedIngredients}>
-                        {menu.ingredients.map(ing => (
-                          <span key={ing} className={styles.smallTag}>{ing}</span>
-                        ))}
+                    {menu.haveIngredients?.length || menu.needIngredients?.length ? (
+                      <div className={styles.ingredientGroups}>
+                        {menu.haveIngredients && menu.haveIngredients.length > 0 && (
+                          <div className={styles.usedIngredients}>
+                            <span className={styles.ingLabel}>🧊 {t('home.have')}</span>
+                            {menu.haveIngredients.map(ing => (
+                              <span key={ing} className={styles.smallTag}>{ing}</span>
+                            ))}
+                          </div>
+                        )}
+                        {menu.needIngredients && menu.needIngredients.length > 0 && (
+                          <div className={styles.usedIngredients}>
+                            <span className={styles.ingLabel}>🛒 {t('home.need')}</span>
+                            {menu.needIngredients.map(ing => (
+                              <span key={ing} className={styles.needTag}>{ing}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      menu.ingredients?.length > 0 && (
+                        <div className={styles.usedIngredients}>
+                          {menu.ingredients.map(ing => (
+                            <span key={ing} className={styles.smallTag}>{ing}</span>
+                          ))}
+                        </div>
+                      )
                     )}
                     {menu.nutrition && (
                       <div className={styles.nutrition}>

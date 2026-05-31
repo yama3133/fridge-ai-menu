@@ -41,7 +41,7 @@ export default function LoginPage() {
           fontSize: 16,
           fontWeight: 600,
           color: '#fff',
-          background: '#1a73e8',
+          background: '#2563eb',
           border: 'none',
           borderRadius: 8,
           cursor: 'pointer',

@@ -94,7 +94,7 @@ export default function CoachPage() {
 
       {advice && (
         <>
-          <section style={{ ...card, background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+          <section style={{ ...card, background: '#eff6ff', borderColor: '#bfdbfe' }}>
             <h2 style={h2}>{t('coach.summary')}</h2>
             <p style={{ margin: 0, lineHeight: 1.7 }}>{advice.summaryText}</p>
           </section>
@@ -110,7 +110,7 @@ export default function CoachPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ flex: '1 1 auto', minWidth: 120, ...card, padding: 14, textAlign: 'center' }}>
-      <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{value}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: '#2563eb' }}>{value}</div>
       <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{label}</div>
     </div>
   )
@@ -158,7 +158,7 @@ const primaryBtn: React.CSSProperties = {
   fontSize: 16,
   fontWeight: 600,
   color: '#fff',
-  background: '#16a34a',
+  background: '#2563eb',
   border: 'none',
   borderRadius: 8,
   cursor: 'pointer',

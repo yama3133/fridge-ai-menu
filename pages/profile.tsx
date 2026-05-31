@@ -160,7 +160,7 @@ export default function ProfilePage() {
       <button style={{ ...primaryBtn, marginTop: 8 }} onClick={save} disabled={saving}>
         {saving ? t('common.saving') : t('common.save')}
       </button>
-      {message && <p style={{ textAlign: 'center', color: '#1a73e8' }}>{message}</p>}
+      {message && <p style={{ textAlign: 'center', color: '#2563eb' }}>{message}</p>}
     </main>
   )
 }
@@ -195,7 +195,7 @@ const primaryBtn: React.CSSProperties = {
   fontSize: 16,
   fontWeight: 600,
   color: '#fff',
-  background: '#1a73e8',
+  background: '#2563eb',
   border: 'none',
   borderRadius: 8,
   cursor: 'pointer',
