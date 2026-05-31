@@ -155,7 +155,7 @@ export default function DashboardPage() {
                     label={{ value: t('dash.targetKcal'), fontSize: 11, fill: '#ef4444', position: 'insideTopRight' }}
                   />
                 )}
-                <Bar dataKey="kcal" name="kcal" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="kcal" name="kcal" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -182,7 +182,7 @@ function ProgressRow({
   const v = Math.round(value)
   const pct = target && target > 0 ? Math.min((v / target) * 100, 100) : 0
   const over = target != null && v > target
-  const barColor = over ? (overIsBad ? '#ef4444' : '#16a34a') : '#16a34a'
+  const barColor = over ? (overIsBad ? '#ef4444' : '#2563eb') : '#2563eb'
 
   return (
     <div style={{ marginBottom: 14 }}>
@@ -192,7 +192,7 @@ function ProgressRow({
           {v}
           {target != null ? ` / ${target}` : ''} {unit}
           {target != null && (
-            <span style={{ marginLeft: 8, color: over ? (overIsBad ? '#ef4444' : '#16a34a') : '#888' }}>
+            <span style={{ marginLeft: 8, color: over ? (overIsBad ? '#ef4444' : '#2563eb') : '#888' }}>
               {overIsBad
                 ? over
                   ? t('dash.over', { n: v - target })
@@ -239,7 +239,7 @@ const primaryBtn: React.CSSProperties = {
   fontSize: 16,
   fontWeight: 600,
   color: '#fff',
-  background: '#1a73e8',
+  background: '#2563eb',
   border: 'none',
   borderRadius: 8,
   cursor: 'pointer',

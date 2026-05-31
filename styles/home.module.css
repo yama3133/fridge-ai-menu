@@ -12,9 +12,9 @@
 /* ========== Header ========== */
 
 .header {
-  background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
   padding: 0;
-  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.35);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -84,7 +84,7 @@
 
 .uploadArea:hover {
   border-color: var(--primary);
-  background: #f0fdf4;
+  background: #eff6ff;
 }
 
 .uploadIcon {
@@ -111,7 +111,7 @@
 /* ========== Buttons ========== */
 
 .primaryBtn {
-  background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -121,7 +121,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
   transition: transform 0.15s, box-shadow 0.15s;
   width: 100%;
   -webkit-appearance: none;
@@ -130,7 +130,7 @@
 
 .primaryBtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.5);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
 }
 
 .primaryBtn:active:not(:disabled) {
@@ -152,7 +152,7 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(20, 83, 45, 0.35);
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.35);
   transition: transform 0.15s, box-shadow 0.15s;
   width: 100%;
   -webkit-appearance: none;
@@ -161,7 +161,7 @@
 
 .secondaryBtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(20, 83, 45, 0.45);
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.45);
 }
 
 .secondaryBtn:active:not(:disabled) {
@@ -174,7 +174,7 @@
 }
 
 .captureBtn {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -183,7 +183,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.5);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.5);
   transition: transform 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   touch-action: manipulation;
@@ -191,7 +191,7 @@
 
 .captureBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
 }
 
 .captureBtn:active {
@@ -332,23 +332,59 @@
 }
 
 .ingredientTag {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
   color: var(--secondary);
   border-radius: 50px;
   padding: 6px 14px;
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid #86efac;
+  border: 1px solid #93c5fd;
 }
 
 .smallTag {
-  background: #f0fdf4;
-  color: #166534;
+  background: #eff6ff;
+  color: #1e40af;
   border-radius: 50px;
   padding: 4px 10px;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #bfdbfe;
+}
+
+/* ========== Shopping / ingredient groups ========== */
+
+.ingredientGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-right: 4px;
+  align-self: center;
+}
+
+/* 買い足す食材（オレンジでアクセント） */
+.needTag {
+  background: #fff7ed;
+  color: #c2410c;
+  border-radius: 50px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #fed7aa;
+}
+
+.shoppingSection {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+  animation: slideUp 0.4s ease;
 }
 
 /* ========== Menus ========== */
@@ -451,8 +487,8 @@
   padding: 5px 14px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #166534;
-  background: #dcfce7;
+  color: #1e40af;
+  background: #dbeafe;
   border-radius: 50px;
 }
 
@@ -481,7 +517,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #fff;
-  background: var(--primary, #16a34a);
+  background: var(--primary, #2563eb);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -498,9 +534,9 @@
   padding: 10px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #166534;
-  background: #dcfce7;
-  border: 1px solid #86efac;
+  color: #1e40af;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
   border-radius: 8px;
   cursor: default;
 }
@@ -592,15 +628,15 @@
   }
 
   .ingredientTag {
-    background: linear-gradient(135deg, #14532d, #166534);
-    border-color: #16a34a;
-    color: #bbf7d0;
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    border-color: #2563eb;
+    color: #bfdbfe;
   }
 
   .smallTag {
-    background: #14532d;
-    border-color: #166534;
-    color: #86efac;
+    background: #1e3a8a;
+    border-color: #1e40af;
+    color: #93c5fd;
   }
 
   .error {
